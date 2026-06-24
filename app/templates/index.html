@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}CryptaShield - Secure Password Lifecycle System{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="text-align: center; max-width: 800px; margin: 40px auto; padding: 50px 30px;">
+    <h1 style="font-size: 3rem; margin-bottom: 20px; background: linear-gradient(135deg, #fff, var(--color-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Secure Password Lifecycle & Key Protection System
+    </h1>
+    <p style="font-size: 1.1rem; margin-bottom: 35px; line-height: 1.7; max-width: 650px; margin-left: auto; margin-right: auto;">
+        Demonstrating industry-standard cybersecurity compliance, advanced cryptographic protections, and rigid password lifecycle enforcements. Protect against credential stuffing, brute-forcing, and database tamper vectors.
+    </p>
+
+    <div style="display: flex; gap: 16px; justify-content: center; margin-bottom: 50px;">
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Sign In</a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">Create Account</a>
+    </div>
+
+    <div class="grid-3" style="text-align: left; margin-top: 20px;">
+        <div style="padding: 20px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
+            <div style="color: var(--color-primary); font-size: 1.5rem; margin-bottom: 10px;">🔒</div>
+            <h3 style="margin-bottom: 8px;">Argon2id Hashing</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 0;">Resistant to GPU brute-force attacks and memory-hard computing. Features native timing attack resistance.</p>
+        </div>
+        <div style="padding: 20px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
+            <div style="color: var(--color-crypto); font-size: 1.5rem; margin-bottom: 10px;">🔑</div>
+            <h3 style="margin-bottom: 8px;">AES-256-GCM</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 0;">RSA private keys are encrypted in-database using authenticated symmetric encryption. Master keys are isolated in server environment variables.</p>
+        </div>
+        <div style="padding: 20px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
+            <div style="color: var(--color-success); font-size: 1.5rem; margin-bottom: 10px;">✍️</div>
+            <h3 style="margin-bottom: 8px;">RSA-4096 Logs</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 0;">Audit logs are cryptographically signed at runtime. Any unauthorized tampering of data can be detected instantly.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

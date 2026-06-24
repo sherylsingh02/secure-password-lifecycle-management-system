@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard - CryptaShield{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 25px;">
+        <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 600; color: var(--color-primary); letter-spacing: 0.05em;">Welcome back</span>
+            <h1 style="margin-bottom: 0; font-size: 2.25rem;">{{ current_user.username }}</h1>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <span class="badge badge-success" style="font-size: 0.85rem; padding: 6px 14px;">
+                Role: {{ current_user.role.name }}
+            </span>
+            <span class="badge badge-success" style="font-size: 0.85rem; padding: 6px 14px; background-color: rgba(14, 165, 233, 0.1); color: var(--color-primary); border-color: rgba(14, 165, 233, 0.3);">
+                Status: Active
+            </span>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <!-- Account Info -->
+        <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px;">
+            <h3 style="margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                👤 Account Information
+            </h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Username</span>
+                    <strong style="color: white; font-size: 0.9rem;">{{ current_user.username }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Security Role</span>
+                    <strong style="color: white; font-size: 0.9rem;">{{ current_user.role.name }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Enrollment Date</span>
+                    <strong style="color: white; font-size: 0.9rem; font-family: monospace;">{{ created_date }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Configured Password Age</span>
+                    <strong style="color: white; font-size: 0.9rem;">{{ current_user.password_expiry_days }} Days</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Expiry Countdown -->
+        <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px;">
+            <h3 style="margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                ⏳ Password Lifecycle
+            </h3>
+            
+            <p style="font-size: 0.9rem; margin-bottom: 15px;">Remaining Password Validity Period:</p>
+            
+            <div class="expiry-box" style="margin-bottom: 20px;">
+                <div class="expiry-time">
+                    <span class="expiry-time-val">{{ days_left }}</span>
+                    <span class="expiry-time-lbl">Days</span>
+                </div>
+                <div class="expiry-time">
+                    <span class="expiry-time-val">{{ hours_left }}</span>
+                    <span class="expiry-time-lbl">Hours</span>
+                </div>
+                <div class="expiry-time">
+                    <span class="expiry-time-val">{{ minutes_left }}</span>
+                    <span class="expiry-time-lbl">Mins</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 12px;">
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                    <span>Expires: </span>
+                    <strong style="font-family: monospace; color: white;">{{ expiry_date }}</strong>
+                </div>
+                <a href="{{ url_for('auth.change_password') }}" class="btn btn-primary" style="font-size: 0.85rem; padding: 8px 16px;">Update Password</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

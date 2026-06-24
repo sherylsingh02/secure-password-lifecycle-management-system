@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Trail Verification - CryptaShield{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 25px; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 600; color: var(--color-success); letter-spacing: 0.05em;">Security Audit</span>
+            <h1 style="margin-bottom: 0; font-size: 2.25rem;">Audit Trail Verification</h1>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <a href="{{ url_for('admin.verify_audit_logs') }}" class="btn btn-primary">
+                🛡️ Run Signature Verification
+            </a>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Explanatory note -->
+    <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 10px; padding: 15px; margin-bottom: 30px; font-size: 0.85rem;">
+        🔒 <strong>Tamper-Evident Ledger:</strong> Every event in the audit trail is hashed and signed at runtime using a secure, AES-encrypted <strong>RSA-4096 Private Key</strong>. Running a signature check validates that no database records have been modified, deleted, or inserted out of order.
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>Timestamp</th>
+                    <th>Event Type</th>
+                    <th>Event Details</th>
+                    <th>Signature Check</th>
+                    <th>Simulate Tamper</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in results %}
+                    <tr>
+                        <td style="font-family: monospace;">#{{ item.log.id }}</td>
+                        <td style="font-size: 0.8rem; font-family: monospace;">{{ item.log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td><span class="badge" style="background-color: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border-color);">{{ item.log.event_type }}</span></td>
+                        <td>{{ item.log.description }}</td>
+                        <td>
+                            {% if item.is_valid %}
+                                <span class="badge badge-success" style="display: inline-flex; align-items: center; gap: 4px;">
+                                    ✔ VERIFIED
+                                </span>
+                            {% else %}
+                                <span class="badge badge-danger" style="display: inline-flex; align-items: center; gap: 4px;">
+                                    ⚠ TAMPERED
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.is_valid %}
+                                <a href="{{ url_for('admin.simulate_tampering', log_id=item.log.id) }}" class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="return confirm('WARNING: This action will modify this log entry directly in the database to test the detection system. Proceed?');">
+                                    Simulate Tamper
+                                </a>
+                            {% else %}
+                                <span style="font-size: 0.75rem; color: var(--color-danger); font-weight: 600;">ALREADY TAMPERED</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Security Admin Dashboard - CryptaShield{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <span style="font-size: 0.8rem; text-transform: uppercase; font-weight: 600; color: var(--color-crypto); letter-spacing: 0.05em;">Administration Panel</span>
+    <h1 style="margin-bottom: 30px; font-size: 2.25rem;">Security Command Center</h1>
+    
+    <!-- Stats Grid -->
+    <div class="grid-4" style="margin-bottom: 40px;">
+        <div class="glass-card stat-card" style="border-left: 4px solid var(--color-primary);">
+            <span class="stat-label">Active Enrolled Users</span>
+            <span class="stat-val">{{ total_users }}</span>
+        </div>
+        <div class="glass-card stat-card" style="border-left: 4px solid var(--color-danger);">
+            <span class="stat-label">Locked Accounts</span>
+            <span class="stat-val">{{ locked_users|length }}</span>
+        </div>
+        <div class="glass-card stat-card" style="border-left: 4px solid var(--color-warning);">
+            <span class="stat-label">Expired / Near Expiry</span>
+            <span class="stat-val">{{ expired_count }} / {{ warning_count }}</span>
+        </div>
+        <div class="glass-card stat-card" style="border-left: 4px solid var(--color-crypto);">
+            <span class="stat-label">Secured Audit Trails</span>
+            <span class="stat-val">{{ total_audit_logs }} Logs</span>
+        </div>
+    </div>
+
+    <!-- Active Management Grid -->
+    <div class="grid-2" style="margin-bottom: 40px;">
+        <!-- Left: Locked Accounts Management -->
+        <div class="glass-card">
+            <h2 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                🔒 Account Lockout Control
+            </h2>
+            
+            {% if locked_users %}
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Fail Count</th>
+                                <th>Locked Until</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in locked_users %}
+                                <tr>
+                                    <td><strong>{{ u.username }}</strong></td>
+                                    <td><span style="color: var(--color-danger); font-weight: 600;">{{ u.failed_login_attempts }}/5</span></td>
+                                    <td style="font-size: 0.8rem; font-family: monospace;">{{ u.locked_until.strftime('%H:%M:%S UTC') if u.locked_until else 'Locked' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin.unlock_user', user_id=u.id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">
+                                            Unlock Account
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p style="text-align: center; padding: 30px 0; color: var(--text-secondary);">
+                    ✅ No locked user accounts in the system.
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Right: Cryptographic Key Vault Operations -->
+        <div class="glass-card">
+            <h2 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                🔑 Cryptographic Key Vault
+            </h2>
+            
+            <div style="background: rgba(0,0,0,0.15); border-radius: 8px; border: 1px solid var(--border-color); padding: 18px; margin-bottom: 20px; font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: var(--text-secondary);">Signing Algorithm</span>
+                    <strong style="color: white;">RSA-4096-PSS</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: var(--text-secondary);">Encryption Wrapper</span>
+                    <strong style="color: white;">AES-256-GCM (En-DB)</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: var(--text-secondary);">Master Key Location</span>
+                    <strong style="color: var(--color-success);">Environment Variable</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary);">Key Generated At</span>
+                    <strong style="color: white; font-family: monospace;">{{ key_created }}</strong>
+                </div>
+            </div>
+
+            <p style="font-size: 0.8rem; margin-bottom: 20px;">
+                🔑 <strong>Key Rotation Procedure:</strong> Rotating keys generates a fresh RSA-4096 signature key. The private key is encrypted with AES-256-GCM and stored. The system then automatically re-signs all past audit logs with the new private key to preserve chain integrity.
+            </p>
+
+            <form action="{{ url_for('admin.rotate_keys') }}" method="POST" onsubmit="return confirm('WARNING: Are you sure you want to rotate the RSA audit-log signing keys? All database logs will be cryptographically re-signed.');">
+                <button type="submit" class="btn btn-crypto" style="width: 100%;">
+                    🔄 Rotate RSA-4096 Key Pair
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bottom: Security Event logs & Login Attempts -->
+    <div class="grid-2">
+        <!-- Security Logs -->
+        <div class="glass-card">
+            <h2 style="font-size: 1.25rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                🛡️ Live Security Event Feed
+            </h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                {% if security_events %}
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+                        {% for event in security_events %}
+                            <li style="padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); font-size: 0.85rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <strong>{{ event.event_type }}</strong>
+                                    {% if event.severity == 'CRITICAL' %}
+                                        <span class="badge badge-danger">Critical</span>
+                                    {% elif event.severity == 'WARNING' %}
+                                        <span class="badge badge-warning">Warning</span>
+                                    {% else %}
+                                        <span class="badge badge-success" style="background-color: rgba(14, 165, 233, 0.15); color: var(--color-primary); border: 1px solid rgba(14,165,233,0.3);">Info</span>
+                                    {% endif %}
+                                </div>
+                                <p style="font-size: 0.8rem; margin-bottom: 6px; color: var(--text-primary);">{{ event.description }}</p>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); font-family: monospace;">{{ event.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p style="text-align: center; color: var(--text-secondary); padding: 20px;">No security events logged.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Failed Login Monitor -->
+        <div class="glass-card">
+            <h2 style="font-size: 1.25rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                🛑 Brute-Force Monitoring (Failed attempts)
+            </h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                {% if failed_attempts %}
+                    <div class="table-responsive">
+                        <table class="table-custom" style="margin-top: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Target Username</th>
+                                    <th>Client IP</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for att in failed_attempts %}
+                                    {% if not att.is_successful %}
+                                    <tr>
+                                        <td><strong>{{ att.username }}</strong></td>
+                                        <td style="font-family: monospace; font-size: 0.8rem;">{{ att.ip_address or 'Unknown' }}</td>
+                                        <td style="font-size: 0.75rem; font-family: monospace;">{{ att.attempted_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p style="text-align: center; color: var(--text-secondary); padding: 20px;">No failed login attempts detected.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
